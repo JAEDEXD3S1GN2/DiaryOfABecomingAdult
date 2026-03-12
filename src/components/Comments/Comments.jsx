@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getToken } from "../../../utils/tokenService";
 import { BaseUrl } from "../../../Baseconfig";
+import toast from "react-hot-toast";
 
 const API_BASE = (BaseUrl || "").replace(/\/+$/g, "");
 
@@ -85,6 +86,7 @@ export default function Comments({ postId }) {
     } catch (err) {
       console.error(err);
       alert("Failed to post comment.");
+      toast.error("Failed to post comment.");
     }
   };
 
@@ -100,6 +102,7 @@ export default function Comments({ postId }) {
     } catch (err) {
       console.error(err);
       alert("Failed to delete comment.");
+      toast.error("Failed to delete comment.");
     }
   };
 
@@ -125,9 +128,11 @@ export default function Comments({ postId }) {
       );
       setComments((p) => p.map((c) => (c.id === id ? res.data : c)));
       cancelEdit();
+      toast.success("Comment updated successfully.");
     } catch (err) {
       console.error(err);
       alert("Failed to update comment.");
+      toast.error("Failed to update comment.");
     }
   };
 

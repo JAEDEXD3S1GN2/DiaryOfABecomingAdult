@@ -88,14 +88,6 @@ const PostDetails = () => {
 					<h1 className="text-4xl md:text-6xl font-diary leading-tight mb-6">
 						{post.title}
 					</h1>
-
-					{/* CONTENT PREVIEW */}
-					<p className="text-white/90 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-						{post.description
-							?.replace(/<[^>]+>/g, "")
-							.substring(0, 200)}...
-					</p>
-
 				</div>
 			</motion.section>
 
@@ -194,3 +186,4 @@ const PostDetails = () => {
 };
 
 export default PostDetails;
+

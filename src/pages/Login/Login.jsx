@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { saveToken } from "../../../utils/tokenService";
 import { BaseUrl } from "../../../Baseconfig";
 
@@ -17,11 +18,17 @@ const Login = () => {
     password: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
@@ -58,7 +65,8 @@ const Login = () => {
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Login failed",
-        { id: loadingToast }
+        { id: loadingToast },
+        console.log(error)
       );
     }
   };
@@ -98,14 +106,27 @@ const Login = () => {
                 <label className="block text-sm font-medium text-blackBrand mb-2">
                   Password
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className="w-full rounded-xl border border-blackBrand/10 px-4 py-3 focus:ring-2 focus:ring-greenBrand/40 focus:outline-none"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className="w-full rounded-xl border border-blackBrand/10 px-4 py-3 pr-12 focus:ring-2 focus:ring-greenBrand/40 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blackBrand/60 hover:text-blackBrand transition"
+                  >
+                    {showPassword ? (
+                      <AiOutlineEyeInvisible size={20} />
+                    ) : (
+                      <AiOutlineEye size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -122,7 +143,7 @@ const Login = () => {
               </div>
 
               <p className="text-sm text-center text-blackBrand/60">
-                Don’t have an account?{" "}
+                Don't have an account?{" "}
                 <Link to="/Register" className="text-greenBrand font-medium">
                   Create one
                 </Link>

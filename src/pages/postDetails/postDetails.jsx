@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { Mode } from "../../AppContext";
 import Comments from "../../components/Comments/Comments";
 import { motion } from "framer-motion";
+import { getToken } from "../../../utils/tokenService";
 
 const API_BASE = (BaseUrl || "").replace(/\/+$/g, "");
 
@@ -34,6 +35,9 @@ const PostDetails = () => {
 	const [post, setPost] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [liked, setLiked] = useState(false);
+	const [likesCount, setLikesCount] = useState(0);
+	const [likePending, setLikePending] = useState(false);
 	const token = sessionStorage.getItem("token");
 	const LoginStatus = useContext(Mode);
 
@@ -47,8 +51,13 @@ const PostDetails = () => {
 
 		const fetchPost = async () => {
 			try {
-				const res = await axios.get(`${API_BASE}/api/posts/${id}`);
+				const decrypted = getToken();
+				const res = await axios.get(`${API_BASE}/api/posts/${id}`, {
+					headers: decrypted ? { Authorization: `Bearer ${decrypted}` } : {},
+				});
 				setPost(res.data);
+				setLiked(!!res.data.likedByMe);
+				setLikesCount(res.data.likes || 0);
 			} catch (err) {
 				console.error(err);
 				setError("Unable to load post.");
@@ -58,6 +67,33 @@ const PostDetails = () => {
 		};
 		fetchPost();
 	}, [id]);
+
+	const toggleLike = async () => {
+		const decrypted = getToken();
+		if (!decrypted) return alert("Please log in to like this post.");
+		if (likePending) return;
+
+		const nextLiked = !liked;
+		setLikePending(true);
+		setLiked(nextLiked);
+		setLikesCount((c) => c + (nextLiked ? 1 : -1));
+
+		try {
+			const authHeader = { headers: { Authorization: `Bearer ${decrypted}` } };
+			const res = nextLiked
+				? await axios.post(`${API_BASE}/api/posts/${id}/like`, {}, authHeader)
+				: await axios.delete(`${API_BASE}/api/posts/${id}/like`, authHeader);
+			setLiked(res.data.liked);
+			setLikesCount(res.data.post.likes || 0);
+		} catch (err) {
+			console.error(err);
+			// roll back the optimistic update on failure
+			setLiked(!nextLiked);
+			setLikesCount((c) => c + (nextLiked ? -1 : 1));
+		} finally {
+			setLikePending(false);
+		}
+	};
 
 	if (loading) return <div className="text-center py-40 text-lg">Loading post...</div>;
 	if (error) return <div className="text-center py-40 text-red-500 text-lg">{error}</div>;
@@ -88,6 +124,21 @@ const PostDetails = () => {
 					<h1 className="text-4xl md:text-6xl font-diary leading-tight mb-6">
 						{post.title}
 					</h1>
+
+					{/* LIKES + VIEWS */}
+					<div className="flex items-center justify-center gap-6">
+						<button
+							onClick={toggleLike}
+							disabled={likePending}
+							className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
+								liked ? "bg-white text-greenBrand" : "bg-white/15 text-white hover:bg-white/25"
+							}`}
+						>
+							<span>{liked ? "♥" : "♡"}</span>
+							<span>{likesCount}</span>
+						</button>
+						<span className="text-white/70 text-sm">{post.views || 0} views</span>
+					</div>
 				</div>
 			</motion.section>
 

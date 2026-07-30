@@ -18,6 +18,7 @@ import AdminDashboard from './pages/Admindashboard/adminDashboard';
 import AdminCreatePost from './pages/createPost/createPost';
 import PostDetails from './pages/postDetails/postDetails';
 import EditPost from './pages/editPost/editPost';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <Mode.Provider value={{isLoggedin, setIsLoggedin}}>
+    <ScrollToTop />
     <Navbar />
     <Routes>
       <Route path="/" element={<Home />} />
